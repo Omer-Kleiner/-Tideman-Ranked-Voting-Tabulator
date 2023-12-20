@@ -1,0 +1,86 @@
+Sub TidemanCondorcet()
+    ' Assume candidates are labeled A, B, C, etc.
+    Dim candidateCount As Integer
+    candidateCount = 5 ' Change this based on the number of candidates
+
+    ' Initialize the pairwise matrix
+    Dim pairwiseMatrix() As Integer
+    ReDim pairwiseMatrix(1 To candidateCount, 1 To candidateCount)
+
+    ' Initialize the votes array
+    Dim votes() As Integer
+    ReDim votes(1 To candidateCount)
+
+    ' Sample preferences - replace with your own data
+    ' Example: Voter 1 prefers A > B > C > D > E
+    votes(1) = Array(1, 2, 3, 4, 5)
+    ' Example: Voter 2 prefers B > A > C > D > E
+    votes(2) = Array(2, 1, 3, 4, 5)
+    ' Add more voters as needed
+
+    ' Populate the pairwise matrix based on voter preferences
+    PopulatePairwiseMatrix pairwiseMatrix, votes
+
+    ' Determine the overall ranking using the Ranked-Pair method
+    Dim ranking() As Integer
+    ReDim ranking(1 To candidateCount)
+    DetermineRanking pairwiseMatrix, ranking
+
+    ' Print the final ranking
+    Debug.Print "Final Ranking:"
+    For i = 1 To candidateCount
+        Debug.Print "Rank " & i & ": Candidate " & Chr(64 + ranking(i))
+    Next i
+End Sub
+
+Sub PopulatePairwiseMatrix(ByRef matrix() As Integer, ByVal votes() As Variant)
+    Dim voterCount As Integer
+    voterCount = UBound(votes)
+
+    For i = 1 To voterCount
+        Dim preference() As Integer
+        preference = votes(i)
+
+        For j = 1 To UBound(preference)
+            For k = j + 1 To UBound(preference)
+                matrix(preference(j), preference(k)) = matrix(preference(j), preference(k)) + 1
+            Next k
+        Next j
+    Next i
+End Sub
+
+Sub DetermineRanking(ByRef matrix() As Integer, ByRef ranking() As Integer)
+    Dim candidateCount As Integer
+    candidateCount = UBound(matrix, 1)
+
+    For i = 1 To candidateCount
+        For j = 1 To candidateCount
+            If i <> j Then
+                If matrix(i, j) > matrix(j, i) Then
+                    ' Candidate i is ranked higher than Candidate j
+                    ranking(i) = ranking(i) + 1
+                ElseIf matrix(j, i) > matrix(i, j) Then
+                    ' Candidate j is ranked higher than Candidate i
+                    ranking(j) = ranking(j) + 1
+                End If
+            End If
+        Next j
+    Next i
+
+    ' Sort the ranking array in descending order
+    SortDescending ranking
+End Sub
+
+Sub SortDescending(ByRef arr() As Integer)
+    Dim i As Integer, j As Integer, temp As Integer
+    For i = LBound(arr) To UBound(arr) - 1
+        For j = i + 1 To UBound(arr)
+            If arr(j) > arr(i) Then
+                ' Swap elements if out of order
+                temp = arr(i)
+                arr(i) = arr(j)
+                arr(j) = temp
+            End If
+        Next j
+    Next i
+End Sub
